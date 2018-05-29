@@ -60,7 +60,7 @@ class NewportXPSController(MotorController):
         # do some initialization
         self._motors = {}
         self._target = {}
-        self._threshold = 0.1
+        self._threshold = 0.01
         
 
     def AddDevice(self, axis):
@@ -117,7 +117,7 @@ class NewportXPSController(MotorController):
             raise ValueError('Group or positioner not set for this axis')
             
         [_, pos] = self.XPS.GroupPositionCurrentGet(self.socketIDread, group, 1)
-        time.sleep(0.01)
+        time.sleep(0.05)
         
         return pos
 
@@ -130,7 +130,7 @@ class NewportXPSController(MotorController):
         
         self.XPS.GroupMoveAbsolute(self.socketIDmove, group, [position])
         self._motors[axis]['target'] = position
-        time.sleep(0.01)
+        time.sleep(0.05)
         
     def StopOne(self, axis):
         group = self._motors[axis]['group']
@@ -140,7 +140,7 @@ class NewportXPSController(MotorController):
             raise ValueError('Group or positioner not set for this axis')
         
         self.XPS.GroupMoveAbort(self.socketIDabort, group)
-        time.sleep(0.01)
+        time.sleep(0.05)
         
     def AbortOne(self, axis):
         group = self._motors[axis]['group']
@@ -150,7 +150,7 @@ class NewportXPSController(MotorController):
             raise ValueError('Group or positioner not set for this axis')
         
         self.XPS.GroupMoveAbort(self.socketIDabort, group)
-        time.sleep(0.01)
+        time.sleep(0.05)
     
     def GetAxisPar(self, axis, name):
         name = name.lower()
