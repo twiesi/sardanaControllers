@@ -33,9 +33,11 @@ from scipy.stats import sem
 import zhinst.ziPython as zh
 import zhinst.utils as utils
 
+import sys
+
 
 class boxcars:
-    def __init__(self, ip='127.0.01', port=8004, api_level=6, repRate = 1500, timeOut = 30):
+    def __init__(self, ip='127.0.0.1', port=8004, api_level=6, repRate = 1500, timeOut = 30):
         # Create a connection to a Zurich Instruments Data Server
 	
         print 'connecting ...'
@@ -76,53 +78,52 @@ class boxcars:
         
         print 'connected'
 
-    def startAcq(self,int_time=1):
+    def pollAcq(self,int_time=1):
         # Poll the data
         #define number of samples that shall be recorded    
         
-        self.daq.flush()
+        
         #self.dacq.set('dataAcquisitionModule/grid/cols', nbSamples)
         
         #self.dacq.execute()
         #self.dacq.set('dataAcquisitionModule/forcetrigger', 1)
         self.acqStartTime = time.time()
         poll_length = int_time  # [s]
-        poll_timeout = 10000  # [ms]
+        poll_timeout = 500  # [ms]
         poll_flags = 0x0004
         poll_return_flat_dict = False
         
         self.daq.flush()      
         self.data = self.daq.poll(poll_length, poll_timeout, poll_flags, poll_return_flat_dict)#         
         self.acqEndTime = time.time()
-            
-    def readData(self):
         
         data = self.data
         
-
+        
         boxcar1_value     = data[self.device]['boxcars']['0']['sample']['value']
         boxcar1_timestamp = data[self.device]['boxcars']['0']['sample']['timestamp']                                               
         
         boxcar2_value     = data[self.device]['boxcars']['1']['sample']['value']
         boxcar2_timestamp = data[self.device]['boxcars']['1']['sample']['timestamp']
-        
+           
         freq   = 1500#1/(np.mean((np.diff(boxcar1_timestamp[select])))/self.clock)
         duration = self.acqEndTime-self.acqStartTime
         
         maxStartTime = np.max([boxcar1_timestamp[0], boxcar2_timestamp[0]])	
         minFinishTime = np.min([boxcar1_timestamp[-1], boxcar2_timestamp[-1]])	
-
+        
+        
         select1 = (boxcar1_timestamp >= maxStartTime) &  (boxcar1_timestamp <= minFinishTime) & (~np.isnan(boxcar1_value))
         select2 = (boxcar2_timestamp >= maxStartTime) &  (boxcar2_timestamp <= minFinishTime) & (~np.isnan(boxcar2_value))
-        
+                
         print(len(select1))
         print(len(select2))
         print("----")
-        
-        	
+            
         return (np.mean(boxcar1_value[select1], dtype=np.float64), np.mean(boxcar2_value[select2], dtype=np.float64),
-                sem(boxcar1_value[select1]),sem(boxcar2_value[select2]), len(boxcar1_value[select1]), freq, duration,
-                np.mean((boxcar1_value[select1]/boxcar2_value[select2]), dtype=np.float64))
+                    sem(boxcar1_value[select1]),sem(boxcar2_value[select2]), len(boxcar1_value[select1]), freq, duration,
+                    1)
+        
 #        
 
     def close(self):
@@ -161,7 +162,7 @@ class zhiCounterTimerController(CounterTimerController):
     def ReadOne(self, axis):
         """Get the specified counter value"""
         if axis == 0:
-            self.data = self.zhi.readData()
+            self.data = self.zhi.pollAcq(self.intTime)
                    
         return self.data[axis]
 
@@ -174,11 +175,9 @@ class zhiCounterTimerController(CounterTimerController):
         
     def StartOne(self, axis, value=None):
         """acquire the specified counter"""
-                
+        self.intTime = value        
         if axis == 0:
             self.data = []
-            self.isAquiring = True
-            self.zhi.startAcq(value)
             self.isAquiring = False
     
     def StartAll(self):
