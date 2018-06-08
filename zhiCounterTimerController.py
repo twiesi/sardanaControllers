@@ -33,9 +33,6 @@ from scipy.stats import sem
 import zhinst.ziPython as zh
 import zhinst.utils as utils
 
-import sys
-
-
 class boxcars:
     def __init__(self, ip='127.0.0.1', port=8004, api_level=6, repRate = 1500, timeOut = 30):
         # Create a connection to a Zurich Instruments Data Server
@@ -44,10 +41,10 @@ class boxcars:
 
         self.daq = zh.ziDAQServer(ip, port, api_level)
         self.daq.connect()
-        self.repRate = repRate
-        self.timeOut = timeOut
+        self.timeOut      = timeOut
         self.acqStartTime = None
         self.acqEndTime   = None
+        self.isAcquiring  = False
     
         # Detect a device
         self.device = utils.autoDetect(self.daq)
@@ -64,72 +61,56 @@ class boxcars:
                 "to use API Level 6 in order to obtain boxcar data with timestamps.")
     
         self.daq.sync()
-
-        #self.dacq = self.daq.dataAcquisitionModule()
-        
-        #self.dacq.set('dataAcquisitionModule/device', self.device)
-        #self.dacq.set('dataAcquisitionModule/endless', 0)
-        
-        #grid_mode = 4;
-        #self.dacq.set('dataAcquisitionModule/grid/mode', grid_mode)
                 
         self.daq.subscribe('/%s/boxcars/%d/sample' % (self.device, 0))
         self.daq.subscribe('/%s/boxcars/%d/sample' % (self.device, 1))
         
         print 'connected'
-
-    def pollAcq(self,int_time=1):
-        # Poll the data
-        #define number of samples that shall be recorded    
         
-        
-        #self.dacq.set('dataAcquisitionModule/grid/cols', nbSamples)
-        
-        #self.dacq.execute()
-        #self.dacq.set('dataAcquisitionModule/forcetrigger', 1)
+    def startAcq(self,intTime=1):
+        self.isAcquiring = True
         self.acqStartTime = time.time()
-        poll_length = int_time  # [s]
+        self.data = []
+        
+        self.pollData(intTime)
+
+    def pollData(self, intTime):
+        
+        poll_length = intTime  # [s]
         poll_timeout = 500  # [ms]
         poll_flags = 0x0004
         poll_return_flat_dict = False
         
         self.daq.flush()      
-        self.data = self.daq.poll(poll_length, poll_timeout, poll_flags, poll_return_flat_dict)#         
+        self.data = self.daq.poll(poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
+        self.isAcquiring = False
         self.acqEndTime = time.time()
         
-        data = self.data
+    def readData(self): 
+        boxcar1_value     = self.data[self.device]['boxcars']['0']['sample']['value']
+        boxcar1_timestamp = self.data[self.device]['boxcars']['0']['sample']['timestamp']                                               
         
-        
-        boxcar1_value     = data[self.device]['boxcars']['0']['sample']['value']
-        boxcar1_timestamp = data[self.device]['boxcars']['0']['sample']['timestamp']                                               
-        
-        boxcar2_value     = data[self.device]['boxcars']['1']['sample']['value']
-        boxcar2_timestamp = data[self.device]['boxcars']['1']['sample']['timestamp']
-           
-        freq   = 1500#1/(np.mean((np.diff(boxcar1_timestamp[select])))/self.clock)
-        duration = self.acqEndTime-self.acqStartTime
-        
+        boxcar2_value     = self.data[self.device]['boxcars']['1']['sample']['value']
+        boxcar2_timestamp = self.data[self.device]['boxcars']['1']['sample']['timestamp']           
+                
         maxStartTime = np.max([boxcar1_timestamp[0], boxcar2_timestamp[0]])	
         minFinishTime = np.min([boxcar1_timestamp[-1], boxcar2_timestamp[-1]])	
         
         
         select1 = (boxcar1_timestamp >= maxStartTime) &  (boxcar1_timestamp <= minFinishTime) & (~np.isnan(boxcar1_value))
         select2 = (boxcar2_timestamp >= maxStartTime) &  (boxcar2_timestamp <= minFinishTime) & (~np.isnan(boxcar2_value))
-                
-        print(len(select1))
-        print(len(select2))
-        print("----")
-            
-        return (np.mean(boxcar1_value[select1], dtype=np.float64), np.mean(boxcar2_value[select2], dtype=np.float64),
-                    sem(boxcar1_value[select1]),sem(boxcar2_value[select2]), len(boxcar1_value[select1]), freq, duration,
-                    1)
         
-#        
+        freq     = 1/(np.mean((np.diff(boxcar1_timestamp[select1])))/self.clock)
+        duration = self.acqEndTime-self.acqStartTime  
+        
+        return (np.mean(boxcar1_value[select1], dtype=np.float64), np.mean(boxcar2_value[select2], dtype=np.float64),
+                    sem(boxcar1_value[select1]),sem(boxcar2_value[select2]), len(boxcar1_value[select1]), freq, duration, 1)     
 
     def close(self):
         # Unsubscribe from all paths
         self.daq.unsubscribe('*')
         del self.daq
+        
 
 class zhiCounterTimerController(CounterTimerController):
     """The most basic controller intended from demonstration purposes only.
@@ -162,23 +143,22 @@ class zhiCounterTimerController(CounterTimerController):
     def ReadOne(self, axis):
         """Get the specified counter value"""
         if axis == 0:
-            self.data = self.zhi.pollAcq(self.intTime)
+            self.data = self.zhi.readData()
                    
         return self.data[axis]
 
     def StateOne(self, axis):
         """Get the specified counter state"""
-        if self.isAquiring:
+        
+        if self.zhi.isAcquiring:
             return State.Moving, "Counter is acquiring"
         else:
             return State.On, "Counter is stopped"
         
     def StartOne(self, axis, value=None):
         """acquire the specified counter"""
-        self.intTime = value        
         if axis == 0:
-            self.data = []
-            self.isAquiring = False
+            self.zhi.startAcq(value)
     
     def StartAll(self):
         pass
