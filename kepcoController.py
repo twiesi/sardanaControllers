@@ -74,12 +74,14 @@ class kepcoController(MotorController):
                 state = State.Moving
             else:
                 # after timeout
+                self._log.warning('Kepco Timeout')
                 self._isMoving = False
                 state = State.On
         elif self._isMoving & (abs(pos-self._target) <= self._threshold): 
             # moving and within threshold window
             self._isMoving = False
             state = State.On
+            #print('Kepco Tagret: %f Kepco Current Pos: %f' % (self._target, pos))
         else:
             state = State.Fault
         
@@ -95,6 +97,7 @@ class kepcoController(MotorController):
         self._target = position
         cmd = 'CURR {:f}'.format(position)
         self.inst.write(cmd)
+        time.sleep(0.01)
 
     def StopOne(self, axis):
         pass
