@@ -26,6 +26,7 @@ from sardana.pool.controller import CounterTimerController
 from sardana.pool import PoolUtil
 import sys
 import PyTango
+import time
 
 class motorPosCounterController(CounterTimerController):
     """The most basic controller intended from demonstration purposes only.
@@ -54,22 +55,28 @@ class motorPosCounterController(CounterTimerController):
 
         #print "Connected to: " + self.dev
         
-        self.motor_device = PyTango.DeviceProxy("motor/kepcoctrl/1")
+        self.motor_device = PyTango.DeviceProxy("motor/xps/1")
+        #self.output(self.motor_device.position)
         
     def ReadOne(self, axis):
         """Get the specified counter value"""
+        
         try:            
+            #pos = self.motor_device.Velocity
+#            self.output(self.motor_device.position)
             return 1#return self.motor_device.position
         except:
             print "Unexpected error:", sys.exc_info()[0]
             return 0#dev.position#self.dev_proxy.position#self.dev_proxy.read_attribute('position').value
-    
+#        return self.motor_device.position
+        
     def StateOne(self, axis):
         """Get the specified counter state"""
         return State.On, "Counter is stopped"
         
     def StartOne(self, axis, value=None):
         """acquire the specified counter"""
+        time.sleep(1)
         pass
     
     def StartAll(self):
