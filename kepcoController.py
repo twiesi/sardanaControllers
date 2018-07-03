@@ -40,7 +40,7 @@ class kepcoController(MotorController):
         super(kepcoController, self).__init__(
             inst, props, *args, **kwargs)
 
-        self.rm = visa.ResourceManager()
+        self.rm = visa.ResourceManager('@py')
         self.inst = self.rm.open_resource(self.resource)
         print 'Kepco Initialization'
         print self.inst.query('*IDN?')
