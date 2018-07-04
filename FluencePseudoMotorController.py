@@ -9,10 +9,10 @@ class fluencePseudoMotorController(PseudoMotorController):
        motors. The system uses to real motors sl2t (top slit) and sl2b (bottom
        slit)."""
         
-    axis_attributes  = {'horFWHM': {Type: float, Description: 'beam diameter horizontal FWHM in um', DefaultValue: 0.01, Memorized: Memorize},
-                       'verFWHM': {Type: float, Description: 'beam diameter vertical FWHM in um', DefaultValue: 0.01, Memorized: Memorize},
-                       'refl': {Type: float, Description: 'sample reflectivity', DefaultValue: 0, Memorized: Memorize},
-                       'repRate': {Type: float, Description: 'laser repetition rate', DefaultValue: 3000, Memorized: Memorize},
+    axis_attributes  = {'pumpHor': {Type: float, Description: 'beam diameter horizontal FWHM in um', DefaultValue: 0.01, Memorized: Memorize},
+                        'pumpVer': {Type: float, Description: 'beam diameter vertical FWHM in um', DefaultValue: 0.01, Memorized: Memorize},
+                        'refl': {Type: float, Description: 'sample reflectivity', DefaultValue: 0, Memorized: Memorize},
+                        'repRate': {Type: float, Description: 'laser repetition rate', DefaultValue: 3000, Memorized: Memorize},
                        }
     
     
@@ -24,12 +24,14 @@ class fluencePseudoMotorController(PseudoMotorController):
     
     def CalcPhysical(self, axis, pseudo_pos, curr_physical_pos):
         fluence = pseudo_pos[axis-1]
-        power = fluence/10
+        trans   = 1-(self.refl/100)
+        power = (fluence*self.repRate/1000*np.pi*self.pumpHor/10000/2*self.pumpVer/10000/2)/trans
         return power
     
     def CalcPseudo(self, axis, physical_pos, curr_pseudo_pos):
-        power = physical_pos[axis-1]
-        fluence = power*10
+        power = physical_pos[axis-1]        
+        trans   = 1-(self.refl/100)
+        fluence = power*trans/(self.repRate/1000*np.pi*self.pumpHor/10000/2*self.pumpVer/10000/2)
         return fluence
     
     def GetAxisExtraPar(self, axis, name):
@@ -40,14 +42,14 @@ class fluencePseudoMotorController(PseudoMotorController):
         """
         name = name.lower()
         
-        if name == 'horfwhm':
-            result = self.horfwhm
-        elif name == 'verfwhm':
-            result = self.verfwhm
+        if name == 'pumphor':
+            result = self.pumpHor
+        elif name == 'pumpver':
+            result = self.pumpVer
         elif name == 'refl':
             result = self.refl
         elif name == 'reprate':
-            result = self.reprate
+            result = self.repRate
         else:
             raise ValueError('There is not %s attribute' % name)
         return result
@@ -59,14 +61,14 @@ class fluencePseudoMotorController(PseudoMotorController):
         @param value to be set
         """
         name = name.lower()
-        if name == 'horfwhm':
-            self.horfwhm = value
-        elif name == 'verfwhm':
-            self.verfwhm = value
+        if name == 'pumphor':
+            self.pumpHor = value
+        elif name == 'pumpver':
+            self.pumpVer = value
         elif name == 'refl':
             self.refl = value
         elif name == 'reprate':
-            self.reprate = value
+            self.repRate = value
         else:
             raise ValueError('There is not %s attribute' % name)
         
