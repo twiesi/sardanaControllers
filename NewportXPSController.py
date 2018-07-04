@@ -24,18 +24,18 @@
 """This file contains the code for an hypothetical Springfield motor controller
 used in documentation"""
 
-import newportXPS.XPS as XPS
+from newportXPS import XPS
 import time
 
 from sardana import State
 from sardana.pool.controller import MotorController
 
-from sardana.pool.controller import Type, Description, DefaultValue, Access, FGet, FSet, DataAccess, Memorize, Memorized
+from sardana.pool.controller import Type, Description, DefaultValue, Access, DataAccess, Memorize, Memorized
 
 
 class NewportXPSController(MotorController):
     ctrl_properties = {'IP': {Type: str, Description: 'The IP of the XPS controller', DefaultValue: 'xps-controller.hhg.lab'},
-						     'port': {Type: int, Description: 'The port of the XPS controller', DefaultValue: 5001},
+						  'port': {Type: int, Description: 'The port of the XPS controller', DefaultValue: 5001},
 						     }
     
     axis_attributes  = {'group': {Type: str, Description: 'Group name of the axis', DefaultValue: 'Single1', Access: DataAccess.ReadWrite, Memorized: Memorize},
@@ -50,13 +50,13 @@ class NewportXPSController(MotorController):
             inst, props, *args, **kwargs)
 
         # initialize hardware communication
-        self.XPS = XPS.XPS()
+        self.XPS = XPS()
         self.socketIDmove  = self.XPS.TCP_ConnectToServer(self.IP, self.port, self.timeOut)
         self.socketIDstate = self.XPS.TCP_ConnectToServer(self.IP, self.port, self.timeOut)
         self.socketIDread  = self.XPS.TCP_ConnectToServer(self.IP, self.port, self.timeOut)
-        self.socketIDabort = self.XPS.TCP_ConnectToServer(self.IP, self.port, self.timeOut,1)
+        self.socketIDabort = self.XPS.TCP_ConnectToServer(self.IP, self.port, self.timeOut, 1)
         self.socketSGamma  = self.XPS.TCP_ConnectToServer(self.IP, self.port, self.timeOut, 1)
-                
+        
         # do some initialization
         self._motors = {}
         self._target = {}
