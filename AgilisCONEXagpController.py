@@ -24,7 +24,7 @@
 """This file contains the code for an hypothetical Springfield motor controller
 used in documentation"""
 
-import pyagilis as agilis
+from pyagilis.controller import AGP
 
 from sardana import State
 from sardana.pool.controller import MotorController
@@ -50,7 +50,7 @@ class AgilisCONEXagpController(MotorController):
             inst, props, *args, **kwargs)
 
         # initialize hardware communication
-        self.agilis = agilis.controller.AGP(self.port)
+        self.agilis = AGP(self.port)
         if self.agilis.getStatus() == 0: # not referenced
             self.agilis.home()
         # do some initialization
