@@ -71,14 +71,15 @@ class AgilisCONEXagapController(MotorController):
         
     def PreStartAll(self):
         # clear the local motion information dictionary
-        self._moveable_info = [0, 0]
+        self._moveable_info = []
 
     def StartOne(self, axis, position):
         # store information about this axis motion
-        self._moveable_info[axis] = position
+        motion_info = axis, position
+        self._moveable_info.append(motion_info)
 
     def StartAll(self):
-        self.agilis.moveAbsolute(self._moveable_info[0], self._moveable_info[1])
+        self.agilis.moveAbsolute(self._moveable_info)
 
     def StopOne(self, axis):
         self.agilis.stop()
