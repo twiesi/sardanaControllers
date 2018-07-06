@@ -33,7 +33,7 @@ from sardana.pool.controller import Type, Description, DefaultValue, Access, FGe
 
 
 class AgilisCONEXagpController(MotorController):
-    ctrl_properties = {'port': {Type: str, Description: 'The port of the rs232 device', DefaultValue: '/dev/ttyUSB0'}}
+    ctrl_properties = {'port': {Type: str, Description: 'The port of the rs232 device', DefaultValue: '/dev/ttyAGILIS1'}}
 
     axis_attributes = {
         "Homing" : {
