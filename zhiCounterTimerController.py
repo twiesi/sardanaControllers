@@ -101,10 +101,13 @@ class boxcars:
         select2 = (boxcar2_timestamp >= maxStartTime) &  (boxcar2_timestamp <= minFinishTime) & (~np.isnan(boxcar2_value))
         
         freq     = 1/(np.mean((np.diff(boxcar1_timestamp[select1])))/self.clock)
-        duration = self.acqEndTime-self.acqStartTime  
+        duration = self.acqEndTime-self.acqStartTime
+        mean1 = np.mean(boxcar1_value[select1], dtype=np.float64)
+        mean2 = np.mean(boxcar2_value[select2], dtype=np.float64)
+        rel   = mean1/mean2
         
-        return (np.mean(boxcar1_value[select1], dtype=np.float64), np.mean(boxcar2_value[select2], dtype=np.float64),
-                    sem(boxcar1_value[select1]),sem(boxcar2_value[select2]), len(boxcar1_value[select1]), freq, duration, 1)     
+        return (mean1, mean2,
+                    sem(boxcar1_value[select1]),sem(boxcar2_value[select2]), len(boxcar1_value[select1]), freq, duration, rel)     
 
     def close(self):
         # Unsubscribe from all paths
