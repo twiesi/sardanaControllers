@@ -43,18 +43,26 @@ class kepcoController(MotorController):
         self.rm = visa.ResourceManager('@py')
         self.inst = self.rm.open_resource(self.resource)
         print 'Kepco Initialization'
-        print self.inst.query('*IDN?')
+        idn = self.inst.query('*IDN?')
+        if idn:
+            print idn
+            print 'Kepco is initialized!'
+        else:
+            print 'Kepco is NOT initialized!'
         # initialize hardware communication        
         self._motors = {}
         self._isMoving = None
         self._moveStartTime = None
-        self._threshold = 0.01
+        self._threshold = 0.1
         self._target = None
-        self._timeout = 3
+        self._timeout = 10
 
     def AddDevice(self, axis):
         self._motors[axis] = True
         self.inst.write('FUNC:MODE CURR')
+        self.inst.write('CURR:MODE FIX')
+        self.inst.write('CURR:LIM:NEG 1.5')
+        self.inst.write('CURR:LIM:POS 1.5')
         self.inst.write('OUTP ON')
 
     def DeleteDevice(self, axis):
@@ -89,6 +97,7 @@ class kepcoController(MotorController):
 
     def ReadOne(self, axis):
         res = float(self.inst.query('MEAS:CURR?'))
+        time.sleep(0.1)
         return res
 
     def StartOne(self, axis, position):
@@ -96,8 +105,8 @@ class kepcoController(MotorController):
         self._isMoving = True
         self._target = position
         cmd = 'CURR {:f}'.format(position)
+        time.sleep(0.1)
         self.inst.write(cmd)
-        time.sleep(0.01)
 
     def StopOne(self, axis):
         pass

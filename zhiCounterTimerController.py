@@ -36,7 +36,7 @@ import zhinst.utils as utils
 class boxcars:
     def __init__(self, ip='127.0.0.1', port=8004, api_level=6, repRate = 1500, timeOut = 30):
         # Create a connection to a Zurich Instruments Data Server
-	
+        print 'ZHI Boxcar Initialization'
         print 'connecting ...'
 
         self.daq = zh.ziDAQServer(ip, port, api_level)

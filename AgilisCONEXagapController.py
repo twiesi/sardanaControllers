@@ -25,7 +25,7 @@
 used in documentation"""
 
 from pyagilis.controller import AGAP
-
+import time
 from sardana import State
 from sardana.pool.controller import MotorController
 from sardana.pool.controller import Type, Description, DefaultValue
@@ -43,7 +43,9 @@ class AgilisCONEXagapController(MotorController):
         # initialize hardware communication
         self.agilis = AGAP(self.port)
         if self.agilis.getStatus() == 0: # configuration mode
-            print('Controller is in configuration mode!')
+            self._log.info('Controller is in configuration mode!')
+        time.sleep(2)
+        print('AGAP Controller on port %s is initialized' % self.port)
         # do some initialization
         self._motors = {}
 
