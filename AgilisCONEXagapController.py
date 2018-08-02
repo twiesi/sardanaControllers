@@ -44,6 +44,7 @@ class AgilisCONEXagapController(MotorController):
         self.agilis = AGAP(self.port)
         if self.agilis.getStatus() == 0: # configuration mode
             self._log.info('Controller is in configuration mode!')
+            print('Controller is in configuration mode!')
         time.sleep(2)
         print('AGAP Controller on port %s is initialized' % self.port)
         # do some initialization

@@ -97,7 +97,7 @@ class kepcoController(MotorController):
 
     def ReadOne(self, axis):
         res = float(self.inst.query('MEAS:CURR?'))
-        time.sleep(0.1)
+        time.sleep(0.001)
         return res
 
     def StartOne(self, axis, position):
@@ -105,7 +105,7 @@ class kepcoController(MotorController):
         self._isMoving = True
         self._target = position
         cmd = 'CURR {:f}'.format(position)
-        time.sleep(0.1)
+        time.sleep(0.01)
         self.inst.write(cmd)
 
     def StopOne(self, axis):
