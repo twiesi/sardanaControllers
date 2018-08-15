@@ -12,13 +12,13 @@ class pseudoCounterAltOn(PseudoCounterController):
     
     def __init__(self, inst, props):  
         PseudoCounterController.__init__(self, inst, props)
-        self.kepco = PyTango.DeviceProxy("motor/kepcoctrl/0")
+        self.magnet = PyTango.DeviceProxy("motor/caenfastpsctrl/0")
         
     def Calc(self, axis, counters):
         counter = counters[axis-1]
         
         if axis == 1:
-            self.field = self.kepco.position
+            self.field = self.magnet.position
       
         if self.field < 0:
             self.value[axis-1] = counter        
