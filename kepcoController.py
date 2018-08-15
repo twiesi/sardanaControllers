@@ -53,7 +53,7 @@ class kepcoController(MotorController):
         self._motors = {}
         self._isMoving = None
         self._moveStartTime = None
-        self._threshold = 0.1
+        self._threshold = 0.05
         self._target = None
         self._timeout = 10
 
