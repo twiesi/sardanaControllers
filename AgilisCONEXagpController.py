@@ -54,7 +54,6 @@ class AgilisCONEXagpController(MotorController):
             self.agilis.home()
             
         # do some initialization
-        time.sleep(2)
         print('AGP Controller on port %s is initialized' % self.port)
         self._motors = {}
 
