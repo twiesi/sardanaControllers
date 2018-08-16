@@ -25,7 +25,6 @@
 used in documentation"""
 
 from pyagilis.controller import AGP
-import time
 from sardana import State
 from sardana.pool.controller import MotorController, Type, Description, DefaultValue
 
@@ -49,6 +48,9 @@ class AgilisCONEXagpController(MotorController):
 
         # initialize hardware communication
         self.agilis = AGP(self.port)
+        # first query will somehow timeout
+        self.agilis.getStatus()
+        
         if self.agilis.getStatus() == 0: # not referenced
             print('AGP controller on port %s is homing' % self.port)
             self.agilis.home()
