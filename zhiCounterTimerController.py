@@ -34,8 +34,8 @@ import zhinst.ziPython as zh
 import zhinst.utils as utils
 
 class boxcars:
-    def __init__(self, ip='127.0.0.1', port=8004, api_level=6, device='DEV2192',
-                 iface='1GbE', settings='PumpUnpumpBoxCar', repRate = 1500, timeOut = 30):
+    def __init__(self, ip='127.0.0.1', port=8004, api_level=6, device='dev2192',
+                 iface='1GbE', settings='PumpUnpumpBoxCar.xml', repRate = 1500, timeOut = 30):
         # Create a connection to a Zurich Instruments Data Server
         
         self.daq = zh.ziDAQServer(ip, port, api_level)
@@ -131,7 +131,7 @@ class zhiCounterTimerController(CounterTimerController):
     documentation"""
     ctrl_properties = {'IP': {Type: str, Description: 'The IP of the ZHI controller', DefaultValue: '127.0.0.1'},
 						     'port': {Type: int, Description: 'The port of the ZHI controller', DefaultValue: 8004},
-                       'device': {Type: str, Description: 'Device name', DefaultValue: 'DEV2192'},
+                       'device': {Type: str, Description: 'Device name', DefaultValue: 'dev2192'},
                        'iface': {Type: str, Description: 'Device interface', DefaultValue: '1GbE'},
                        'settings': {Type: str, Description: 'Device Settings file name', DefaultValue: 'PumpUnpumpBoxCar'},
                        'repRate': {Type: int, Description: 'RepRate of the acquisition', DefaultValue: 1500},
