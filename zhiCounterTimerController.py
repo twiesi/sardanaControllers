@@ -21,7 +21,7 @@
 ##
 ##############################################################################
 
-import time
+import time, os.path as path
 from sardana import State
 from sardana.pool.controller import CounterTimerController, Type, Description, DefaultValue
 
@@ -34,20 +34,28 @@ import zhinst.ziPython as zh
 import zhinst.utils as utils
 
 class boxcars:
-    def __init__(self, ip='127.0.0.1', port=8004, api_level=6, repRate = 1500, timeOut = 30):
+    def __init__(self, ip='127.0.0.1', port=8004, api_level=6, device='DEV2192',
+                 iface='1GbE', settings='PumpUnpumpBoxCar', repRate = 1500, timeOut = 30):
         # Create a connection to a Zurich Instruments Data Server
-        print 'ZHI Boxcar Initialization'
-        print 'connecting ...'
-
+        
         self.daq = zh.ziDAQServer(ip, port, api_level)
+        self.device = device
+        self.iface = iface
+        # one could also use utils.autoConnect() instead
+        self.daq.connectDevice(self.device, self.iface)
         self.daq.connect()
+        # load settings
+        settings_path = path.join(utils.get_default_settings_path(self.daq),
+                                  settings)
+        utils.load_settings(self.daq, self.device, settings_path)
+        
         self.timeOut      = timeOut
         self.acqStartTime = None
         self.acqEndTime   = None
         self.isAcquiring  = False
     
         # Detect a device
-        self.device = utils.autoDetect(self.daq)
+        #self.device = utils.autoDetect(self.daq)
         # Find out whether the device is an HF2 or a UHF
         self.devtype = self.daq.getByte('/%s/features/devtype' % self.device)
         self.options = self.daq.getByte('/%s/features/options' % self.device)
@@ -64,9 +72,7 @@ class boxcars:
                 
         self.daq.subscribe('/%s/boxcars/%d/sample' % (self.device, 0))
         self.daq.subscribe('/%s/boxcars/%d/sample' % (self.device, 1))
-        
-        print 'connected'
-        
+                
     def startAcq(self,intTime=1):
         self.isAcquiring = True
         self.acqStartTime = time.time()
@@ -125,6 +131,9 @@ class zhiCounterTimerController(CounterTimerController):
     documentation"""
     ctrl_properties = {'IP': {Type: str, Description: 'The IP of the ZHI controller', DefaultValue: '127.0.0.1'},
 						     'port': {Type: int, Description: 'The port of the ZHI controller', DefaultValue: 8004},
+                       'device': {Type: str, Description: 'Device name', DefaultValue: 'DEV2192'},
+                       'iface': {Type: str, Description: 'Device interface', DefaultValue: '1GbE'},
+                       'settings': {Type: str, Description: 'Device Settings file name', DefaultValue: 'PumpUnpumpBoxCar'},
                        'repRate': {Type: int, Description: 'RepRate of the acquisition', DefaultValue: 1500},
                        'timeOut': {Type: int, Description: 'Timeout of the acquisition in s', DefaultValue: 30}}
        
@@ -139,7 +148,11 @@ class zhiCounterTimerController(CounterTimerController):
         """Constructor"""
         super(zhiCounterTimerController,
               self).__init__(inst, props, *args, **kwargs)
-        self.zhi = boxcars(self.IP, self.port, api_level=6, repRate=self.repRate, timeOut=self.timeOut)
+        print 'ZI Boxcar Initialization ...',
+        self.zhi = boxcars(self.IP, self.port, api_level=6, device=self.device,
+                           iface=self.iface, settings=self.settings,
+                           repRate=self.repRate, timeOut=self.timeOut)
+        print 'SUCCESS for device %s connected to dataserver %s:%d with settings %s' % (self.device, self.IP, self.port, self.settings)
         self.data = []
         self.isAquiring = False
 

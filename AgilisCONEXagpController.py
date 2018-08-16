@@ -50,13 +50,13 @@ class AgilisCONEXagpController(MotorController):
         self.agilis = AGP(self.port)
         # first query will somehow timeout
         self.agilis.getStatus()
-        
+        print('AGP Controller Initialization ...'),
         if self.agilis.getStatus() == 0: # not referenced
-            print('AGP controller on port %s is homing' % self.port)
+            print('homing ...' % self.port),
             self.agilis.home()
             
         # do some initialization
-        print('AGP Controller on port %s is initialized' % self.port)
+        print('SUCCESS on port %s' % self.port)
         self._motors = {}
 
     def AddDevice(self, axis):

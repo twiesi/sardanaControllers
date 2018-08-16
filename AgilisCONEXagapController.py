@@ -43,11 +43,11 @@ class AgilisCONEXagapController(MotorController):
         self.agilis = AGAP(self.port)
         # first query will somehow timeout
         self.agilis.getStatus()
-        
+        print('AGAP Controller Initialization ...'),
         if self.agilis.getStatus() == 0: # configuration mode
             self._log.info('Controller is in configuration mode!')
-            print('Controller is in configuration mode!')
-        print('AGAP Controller on port %s is initialized' % self.port)
+            print('FAILED due to configuration mode!')
+        print('SUCCESS on port %s' % self.port)
         # do some initialization
         self._motors = {}
 

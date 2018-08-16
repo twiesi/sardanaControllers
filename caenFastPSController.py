@@ -47,12 +47,12 @@ class caenFastPSController(MotorController):
         self.conn.connect((self.ip, self.port))
         self.conn.settimeout(5)
         self.conn.setblocking(True)
-        print 'CAEN FAST-PS Initialization'
+        print('CAEN FAST-PS Initialization ... '),
         [_, idn] = self.__sendAndReceive('VER')
         if idn:
-            print 'Initialized model: %s' % idn
+            print 'SUCCESS for model: %s' % idn
         else:
-            print 'CAEN FAST-PS is NOT initialized!'
+            print 'FAILED!'
         # initialize hardware communication        
         self._motors = {}
         self._isMoving = None
