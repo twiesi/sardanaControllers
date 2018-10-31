@@ -35,6 +35,13 @@ class ZaberTMMController(MotorController):
     ctrl_properties = {'port': {Type: str,
                                 Description: 'The port of the rs232 device',
                                 DefaultValue: '/dev/ttyZaber'}}
+    axis_attributes = {
+    "Homing" : {
+            Type         : bool,
+            Description  : "(de)activates the motor homing algorithm",
+            DefaultValue : False,
+        },
+    }
     
     MaxDevice = 2
     
@@ -53,7 +60,8 @@ class ZaberTMMController(MotorController):
     def AddDevice(self, axis):
         self._motors[axis] = True
         # change setting of devices, because they are non-volatile
-        # disable auto-reply and enable backlash correction
+        # disable auto-reply 1*2^0
+        # enable backlash correction 1*2^1
         command_number = 40 # set device mode
         command = BinaryCommand(axis, command_number, 3)
         self.con.write(command)
@@ -101,7 +109,7 @@ class ZaberTMMController(MotorController):
         
     def StartOne(self, axis, position):
         command_number = 20 # move absolute
-        command = BinaryCommand(axis, command_number, position)
+        command = BinaryCommand(axis, command_number, int(position))
         self.con.write(command)
 
     def StopOne(self, axis):
@@ -113,3 +121,14 @@ class ZaberTMMController(MotorController):
         command_number = 23 # move absolute
         command = BinaryCommand(axis, command_number)
         self.con.write(command)
+
+    def setHoming(self, axis, value):
+        """Homing for given axis"""
+        if value:       
+            command_number = 1 # homing
+            command = BinaryCommand(axis, command_number)
+            self.con.write(command)
+    
+    def getHoming(self, axis):
+        """Homing for given axis"""       
+        return False
