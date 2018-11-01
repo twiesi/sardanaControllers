@@ -24,21 +24,21 @@
 """This file contains the code for an hypothetical Springfield motor controller
 used in documentation"""
 
-from zaber.serial import BinarySerial, BinaryCommand
-import time
-from sardana import State
-from sardana.pool.controller import MotorController
-from sardana.pool.controller import Type, Description, DefaultValue
+from zaber.serial import BinarySerial, BinaryCommand    # Import der Binary Libary von Zaber
+import time # denke ein Python interner Befehl für die Zeit?
+from sardana import State # 
+from sardana.pool.controller import MotorController # Import von Sardana einer Controller Klasse --> MotorController
+from sardana.pool.controller import Type, Description, DefaultValue # Import von sardana Konstanten
 
 
-class ZaberTMMController(MotorController):
+class ZaberTMMController(MotorController): # Steuerung wird der MotorController Klasse zugewiesen
     ctrl_properties = {'port': {Type: str,
-                                Description: 'The port of the rs232 device',
+                                Description: 'The port of the rs232 device', #Port des Controllers
                                 DefaultValue: '/dev/ttyZaber'}}
     axis_attributes = {
     "Homing" : {
             Type         : bool,
-            Description  : "(de)activates the motor homing algorithm",
+            Description  : "(de)activates the motor homing algorithm", #warum "Homing# und 'port'
             DefaultValue : False,
         },
     }
@@ -62,8 +62,8 @@ class ZaberTMMController(MotorController):
         # change setting of devices, because they are non-volatile
         # disable auto-reply 1*2^0
         # enable backlash correction 1*2^1
-        command_number = 40 # set device mode
-        command = BinaryCommand(axis, command_number, 3)
+        command_number = 40 # set device mode # muss man hier nicht noch die dezimalzahl angeben? also je nachdem was du disable/enable willst?
+        command = BinaryCommand(axis, command_number, 3) # ok das passiert hier
         self.con.write(command)
 
     def DeleteDevice(self, axis):
